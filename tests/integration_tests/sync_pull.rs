@@ -170,3 +170,57 @@ fn sync_pull_diverged_fails_safely(mut repo_with_remote_and_feature: TestRepo) {
         "HEAD must not change after a failed (diverged) sync pull"
     );
 }
+
+// ---------------------------------------------------------------------------
+// Test 4: conflicting uncommitted changes — pull aborts without data loss
+// ---------------------------------------------------------------------------
+
+#[rstest]
+fn sync_pull_preserves_conflicting_uncommitted_changes(
+    mut repo_with_remote_and_feature: TestRepo,
+) {
+    let repo = &mut repo_with_remote_and_feature;
+    let wt = repo.worktree_path("feature").to_path_buf();
+
+    // Establish upstream, then advance the remote with a commit that adds
+    // `remote-advance.txt`.
+    repo.run_git_in(&wt, &["push", "-u", "origin", "feature"]);
+    advance_remote_feature(repo);
+
+    // Create an uncommitted local file at the SAME path the incoming commit
+    // adds — a fast-forward would have to overwrite it, so it must abort.
+    let precious = "PRECIOUS uncommitted local work";
+    let conflict_path = wt.join("remote-advance.txt");
+    std::fs::write(&conflict_path, precious).unwrap();
+
+    let pre_sha = repo.head_sha_in(&wt);
+
+    let output = repo
+        .wt_command()
+        .args(["sync", "pull"])
+        .current_dir(&wt)
+        .output()
+        .unwrap();
+
+    assert!(
+        !output.status.success(),
+        "wt sync pull must abort when a fast-forward would overwrite local changes"
+    );
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("panicked"),
+        "dirty-tree pull must not panic; got: {stderr}"
+    );
+
+    // No data loss: the local file content is untouched and HEAD did not move.
+    assert_eq!(
+        std::fs::read_to_string(&conflict_path).unwrap(),
+        precious,
+        "local uncommitted content must be preserved"
+    );
+    assert_eq!(
+        pre_sha,
+        repo.head_sha_in(&wt),
+        "HEAD must not move when the pull aborts"
+    );
+}
