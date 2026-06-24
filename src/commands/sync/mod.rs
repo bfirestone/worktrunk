@@ -28,8 +28,6 @@ pub struct SyncPushResult {
     pub commits_pushed: usize,
 }
 
-// TODO(sync): variants constructed by `sync_push` (T2); kept here as the shared contract.
-#[allow(dead_code)]
 pub enum SyncPushOutcome {
     Pushed,
     UpToDate,
@@ -44,8 +42,6 @@ pub struct SyncPullResult {
     pub commits_pulled: usize,
 }
 
-// TODO(sync): variants constructed by `sync_pull` (T3); kept here as the shared contract.
-#[allow(dead_code)]
 pub enum SyncPullOutcome {
     FastForwarded,
     UpToDate,
@@ -56,8 +52,6 @@ pub enum SyncPullOutcome {
 ///
 /// Diagnostic only (squashed at `wt merge`); the hostname tag identifies which
 /// machine made each checkpoint.
-// TODO(sync): called by `sync_push` (T2); shared helper defined here.
-#[allow(dead_code)]
 pub fn wip_message() -> String {
     let host = gethostname::gethostname().to_string_lossy().into_owned();
     let ts = chrono::Utc::now().to_rfc3339_opts(chrono::SecondsFormat::Secs, true);
@@ -67,8 +61,6 @@ pub fn wip_message() -> String {
 /// Resolve the remote to sync `branch` against. Reuses the branch's configured
 /// push remote (`branch.<name>.pushRemote` → `remote.pushDefault` →
 /// `branch.<name>.remote`), falling back to `origin`.
-// TODO(sync): called by `sync_push` (T2) / `sync_pull` (T3); shared helper defined here.
-#[allow(dead_code)]
 pub fn resolve_sync_remote(repo: &Repository, branch: &str) -> anyhow::Result<String> {
     Ok(repo
         .branch(branch)
