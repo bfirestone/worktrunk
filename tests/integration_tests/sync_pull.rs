@@ -176,9 +176,7 @@ fn sync_pull_diverged_fails_safely(mut repo_with_remote_and_feature: TestRepo) {
 // ---------------------------------------------------------------------------
 
 #[rstest]
-fn sync_pull_preserves_conflicting_uncommitted_changes(
-    mut repo_with_remote_and_feature: TestRepo,
-) {
+fn sync_pull_preserves_conflicting_uncommitted_changes(mut repo_with_remote_and_feature: TestRepo) {
     let repo = &mut repo_with_remote_and_feature;
     let wt = repo.worktree_path("feature").to_path_buf();
 
