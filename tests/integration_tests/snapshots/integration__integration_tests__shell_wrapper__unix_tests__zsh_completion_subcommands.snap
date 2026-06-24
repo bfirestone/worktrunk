@@ -7,5 +7,6 @@ list
 remove
 merge
 step
+sync
 hook
 config
