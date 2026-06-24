@@ -60,7 +60,7 @@ use cli::{
     ConfigPluginsOpencodeCommand, ConfigShellCommand, DefaultBranchAction, GlobalFormatFlag,
     HintsAction, HookCommand, HookOptions, ListArgs, ListSubcommand, LogsAction, MarkerAction,
     MergeArgs, PreviousBranchAction, StateCommand, StateWrite, StepCommand, SwitchFormat,
-    VarsAction,
+    SyncCommand, VarsAction,
 };
 
 /// Render a clap error to stderr, appending a wt-specific nested-subcommand
@@ -868,6 +868,46 @@ fn dispatch_command(
     match command {
         Commands::Config { action } => handle_config_command(action, yes),
         Commands::Step { action } => handle_step_command(action, yes),
+        Commands::Sync { action } => match action {
+            SyncCommand::Push {
+                branch,
+                tracked,
+                message,
+                format,
+            } => {
+                let result = commands::sync_push(branch, tracked, message)?;
+                if format == SwitchFormat::Json {
+                    let payload = serde_json::json!({
+                        "branch": result.branch,
+                        "remote": result.remote,
+                        "committed": result.committed,
+                        "outcome": match result.outcome {
+                            commands::sync::SyncPushOutcome::Pushed => "pushed",
+                            commands::sync::SyncPushOutcome::UpToDate => "up_to_date",
+                        },
+                        "commits_pushed": result.commits_pushed,
+                    });
+                    println!("{}", serde_json::to_string_pretty(&payload)?);
+                }
+                Ok(())
+            }
+            SyncCommand::Pull { branch, format } => {
+                let result = commands::sync_pull(branch)?;
+                if format == SwitchFormat::Json {
+                    let payload = serde_json::json!({
+                        "branch": result.branch,
+                        "remote": result.remote,
+                        "outcome": match result.outcome {
+                            commands::sync::SyncPullOutcome::FastForwarded => "fast_forwarded",
+                            commands::sync::SyncPullOutcome::UpToDate => "up_to_date",
+                        },
+                        "commits_pulled": result.commits_pulled,
+                    });
+                    println!("{}", serde_json::to_string_pretty(&payload)?);
+                }
+                Ok(())
+            }
+        },
         Commands::Hook { action } => handle_hook_command(action, yes),
         Commands::Select { branches, remotes } => handle_select_command(branches, remotes),
         Commands::List(args) => handle_list_command(args),

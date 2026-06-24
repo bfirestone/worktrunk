@@ -41,6 +41,7 @@ Commands:
   remove  Remove worktree; delete branch if merged
   merge   Merge current branch into the target branch
   step    Run individual operations
+  sync    Sync work across machines (append-only)
   hook    Run configured hooks
   config  Manage user & project configs
 

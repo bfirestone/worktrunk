@@ -67,5 +67,8 @@ pub mod step_tether;
 pub mod switch;
 pub mod switch_picker;
 pub mod switch_picker_dry_run;
+pub mod sync_guard;
+pub mod sync_pull;
+pub mod sync_push;
 pub mod user_hooks;
 pub mod version_build;

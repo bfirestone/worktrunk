@@ -155,6 +155,7 @@ crossbeam-channel = "0.5"
 crossterm = { version = "0.29", optional = true }
 indexmap = { version = "2.14", features = ["serde"] }
 etcetera = "0.11"
+gethostname = "1"
 # `log` is still used pervasively for application logging; events flow into
 # `tracing` via `tracing-log::LogTracer` (CLI binary only).
 log = "0.4.31"

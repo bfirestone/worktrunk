@@ -2,6 +2,7 @@ mod config;
 mod hook;
 mod list;
 mod step;
+mod sync;
 
 pub(crate) use config::{
     ApprovalsCommand, CacheAction, CiStatusAction, ConfigAliasCommand, ConfigCommand,
@@ -13,6 +14,7 @@ pub(crate) use config::{
 pub(crate) use hook::{HOOK_TYPE_NAMES, HookCommand, HookOptions, parse_hook_type};
 pub(crate) use list::ListSubcommand;
 pub(crate) use step::StepCommand;
+pub(crate) use sync::SyncCommand;
 
 use clap::builder::styling::{AnsiColor, Color, Styles};
 use clap::{Args, Command, CommandFactory, Parser, Subcommand, ValueEnum};
@@ -1370,6 +1372,28 @@ $ wt step push
     Step {
         #[command(subcommand)]
         action: StepCommand,
+    },
+
+    /// Sync work across machines (append-only)
+    ///
+    /// Push commits + pushes to the remote; pull fast-forwards from it. No
+    /// force-push, no `reset --hard`. Squash the wip stack later with `wt merge`.
+    #[command(
+        after_long_help = r#"`wt sync` moves in-progress work between machines through the git remote, append-only — no history rewriting. [experimental]
+
+## Examples
+
+```console
+wt sync push
+wt sync pull
+```
+
+On machine A, `wt sync push` stages changes (`git add -A`, or `--tracked` for tracked-only), makes a `wip @ <hostname> — <timestamp>` commit, and pushes (setting upstream on the first push). On machine B, `wt sync pull` fetches and fast-forwards. Divergence or conflicting local changes fail safely rather than clobbering work.
+"#
+    )]
+    Sync {
+        #[command(subcommand)]
+        action: SyncCommand,
     },
 
     /// Run configured hooks

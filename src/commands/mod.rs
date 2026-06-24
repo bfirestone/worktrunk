@@ -28,6 +28,7 @@ pub(crate) mod repository_ext;
 mod run_pipeline;
 pub(crate) mod statusline;
 pub(crate) mod step;
+pub(crate) mod sync;
 pub(crate) mod template_vars;
 pub(crate) mod worktree;
 
@@ -64,6 +65,7 @@ pub(crate) use step::{
     handle_squash, step_commit, step_copy_ignored, step_diff, step_dry_run_squash, step_prune,
     step_relocate, step_show_squash_prompt, step_tether,
 };
+pub(crate) use sync::{sync_pull, sync_push};
 pub(crate) use worktree::{
     handle_switch_command, is_worktree_at_expected_path, resolve_worktree_arg,
     worktree_display_name,
