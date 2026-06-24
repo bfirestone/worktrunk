@@ -1388,7 +1388,7 @@ wt sync push
 wt sync pull
 ```
 
-On machine A, `wt sync push` stages changes (`git add -A`, or `--tracked` for tracked-only), makes a `wip @ <hostname> — <timestamp>` commit, and pushes (setting upstream on the first push). On machine B, `wt sync pull` fetches and fast-forwards. Divergence or conflicting local changes fail safely rather than clobbering work.
+On machine A, `wt sync push` stages changes (default: `git add -A`; use `--stage tracked` for tracked-only), makes a `wip @ <hostname> — <timestamp>` commit, and pushes (setting upstream on the first push). On machine B, `wt sync pull` fetches and fast-forwards. Divergence or conflicting local changes fail safely rather than clobbering work.
 "#
     )]
     Sync {
@@ -1999,6 +1999,13 @@ Shared by `wt step commit`, `wt step squash`, and `wt merge`.
 ```toml
 [commit]
 stage = "all"      # What to stage before commit: "all", "tracked", or "none"
+```
+
+### Sync
+
+```toml
+[sync]
+stage = "all"      # What to stage before `wt sync push`: "all", "tracked", or "none"
 ```
 
 ### Merge

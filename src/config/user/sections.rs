@@ -326,6 +326,30 @@ impl Merge for CommitConfig {
     }
 }
 
+/// Configuration for `wt sync`.
+#[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Default, JsonSchema)]
+pub struct SyncConfig {
+    /// What to stage before the wip checkpoint commit (default: all)
+    /// Values: "all", "tracked", "none"
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub stage: Option<StageMode>,
+}
+
+impl SyncConfig {
+    /// What to stage before the wip checkpoint (default: All)
+    pub fn stage(&self) -> StageMode {
+        self.stage.unwrap_or_default()
+    }
+}
+
+impl Merge for SyncConfig {
+    fn merge_with(&self, other: &Self) -> Self {
+        Self {
+            stage: other.stage.or(self.stage),
+        }
+    }
+}
+
 /// Configuration for the `wt merge` command
 ///
 /// Note: `stage` defaults from `[commit]` section, not here.
@@ -596,6 +620,9 @@ pub struct UserProjectOverrides {
 
     #[serde(default, skip_serializing_if = "is_default")]
     pub step: StepConfig,
+
+    #[serde(default, skip_serializing_if = "is_default")]
+    pub sync: SyncConfig,
 
     #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub aliases: BTreeMap<String, CommandConfig>,

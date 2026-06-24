@@ -89,7 +89,7 @@ fn sync_push_commits_and_pushes(mut repo_with_remote_and_feature: TestRepo) {
 }
 
 // ---------------------------------------------------------------------------
-// Test 2: --tracked with only new (untracked) file → nothing staged, no wip
+// Test 2: --stage tracked with only new (untracked) file → nothing staged
 // ---------------------------------------------------------------------------
 
 #[rstest]
@@ -105,14 +105,14 @@ fn sync_push_tracked_only_skips_untracked_files(mut repo_with_remote_and_feature
 
     let output = repo
         .wt_command()
-        .args(["sync", "push", "--tracked"])
+        .args(["sync", "push", "--stage", "tracked"])
         .current_dir(&wt)
         .output()
         .unwrap();
 
     assert!(
         output.status.success(),
-        "wt sync push --tracked failed\nstdout: {}\nstderr: {}",
+        "wt sync push --stage tracked failed\nstdout: {}\nstderr: {}",
         String::from_utf8_lossy(&output.stdout),
         String::from_utf8_lossy(&output.stderr),
     );
@@ -121,7 +121,56 @@ fn sync_push_tracked_only_skips_untracked_files(mut repo_with_remote_and_feature
     let post_sha = repo.head_sha_in(&wt);
     assert_eq!(
         pre_sha, post_sha,
-        "HEAD should not move when nothing is staged with --tracked"
+        "HEAD should not move when nothing is staged with --stage tracked"
+    );
+}
+
+// ---------------------------------------------------------------------------
+// Test 2b: config-default stage=tracked also skips untracked files
+// ---------------------------------------------------------------------------
+
+#[rstest]
+fn sync_push_stage_default_from_config(mut repo_with_remote_and_feature: TestRepo) {
+    let repo = &mut repo_with_remote_and_feature;
+    let wt = repo.worktree_path("feature").to_path_buf();
+
+    // Create an untracked file only — no tracked modifications.
+    std::fs::write(
+        wt.join("config-default-untracked.txt"),
+        "untracked via config",
+    )
+    .unwrap();
+
+    // Record the current feature HEAD before the push attempt.
+    let pre_sha = repo.head_sha_in(&wt);
+
+    // Use --config-set to set sync.stage="tracked" (no --stage flag).
+    let output = repo
+        .wt_command()
+        .args([
+            "sync",
+            "push",
+            "--config-set",
+            r#"sync.stage="tracked""#,
+            "--format",
+            "json",
+        ])
+        .current_dir(&wt)
+        .output()
+        .unwrap();
+
+    assert!(
+        output.status.success(),
+        "wt sync push with config-set sync.stage=tracked failed\nstdout: {}\nstderr: {}",
+        String::from_utf8_lossy(&output.stdout),
+        String::from_utf8_lossy(&output.stderr),
+    );
+
+    // HEAD must not have moved — the config default applied and skipped the untracked file.
+    let post_sha = repo.head_sha_in(&wt);
+    assert_eq!(
+        pre_sha, post_sha,
+        "HEAD should not move when sync.stage=tracked is set in config and only untracked files exist"
     );
 }
 

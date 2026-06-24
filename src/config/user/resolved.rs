@@ -7,7 +7,7 @@
 use super::UserConfig;
 use super::sections::{
     CommitConfig, CommitGenerationConfig, ListConfig, MergeConfig, RemoveConfig, StepConfig,
-    SwitchConfig, SwitchPickerConfig,
+    SwitchConfig, SwitchPickerConfig, SyncConfig,
 };
 
 /// All resolved configuration for a specific project context.
@@ -42,6 +42,8 @@ pub struct ResolvedConfig {
     pub switch: SwitchConfig,
     /// Resolved `wt step` config (access copy-ignored via `step.copy_ignored()`)
     pub step: StepConfig,
+    /// Resolved sync config
+    pub sync: SyncConfig,
 }
 
 impl ResolvedConfig {
@@ -56,6 +58,7 @@ impl ResolvedConfig {
             switch_picker: config.switch_picker(project),
             switch: config.switch(project),
             step: config.step(project),
+            sync: config.sync(project),
         }
     }
 }

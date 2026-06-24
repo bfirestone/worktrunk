@@ -871,11 +871,11 @@ fn dispatch_command(
         Commands::Sync { action } => match action {
             SyncCommand::Push {
                 branch,
-                tracked,
+                stage,
                 message,
                 format,
             } => {
-                let result = commands::sync_push(branch, tracked, message)?;
+                let result = commands::sync_push(branch, stage, message)?;
                 if format == SwitchFormat::Json {
                     let payload = serde_json::json!({
                         "branch": result.branch,

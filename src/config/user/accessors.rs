@@ -14,7 +14,7 @@ use super::UserConfig;
 use super::merge::Merge;
 use super::sections::{
     CommitConfig, CommitGenerationConfig, CopyIgnoredConfig, ListConfig, MergeConfig, RemoveConfig,
-    StepConfig, SwitchConfig, SwitchPickerConfig,
+    StepConfig, SwitchConfig, SwitchPickerConfig, SyncConfig,
 };
 
 /// Default worktree path template
@@ -133,6 +133,14 @@ impl UserConfig {
     /// Returns the `wt step` config for a specific project.
     pub fn step(&self, project: Option<&str>) -> StepConfig {
         self.merged_project_config(project, &self.step, |config| &config.step)
+    }
+
+    /// Returns the sync config for a specific project.
+    ///
+    /// Merges project-specific settings with global settings, where project
+    /// settings take precedence for fields that are set.
+    pub fn sync(&self, project: Option<&str>) -> SyncConfig {
+        self.merged_project_config(project, &self.sync, |config| &config.sync)
     }
 
     /// Returns the `wt step copy-ignored` config for a specific project.

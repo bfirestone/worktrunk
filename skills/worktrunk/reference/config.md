@@ -257,6 +257,13 @@ Shared by `wt step commit`, `wt step squash`, and `wt merge`.
 stage = "all"      # What to stage before commit: "all", "tracked", or "none"
 ```
 
+### Sync
+
+```toml
+[sync]
+stage = "all"      # What to stage before `wt sync push`: "all", "tracked", or "none"
+```
+
 ### Merge
 
 Most flags are on by default. Set to false to change default behavior.

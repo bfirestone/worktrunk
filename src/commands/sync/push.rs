@@ -1,5 +1,6 @@
 use anyhow::Context;
 use color_print::cformat;
+use worktrunk::config::{StageMode, UserConfig};
 use worktrunk::git::Repository;
 use worktrunk::styling::{eprintln, info_message, progress_message, success_message};
 
@@ -7,20 +8,42 @@ use crate::commands::sync::{SyncPushOutcome, SyncPushResult, resolve_sync_remote
 
 pub fn sync_push(
     branch: Option<String>,
-    tracked: bool,
+    stage: Option<StageMode>,
     message: Option<String>,
 ) -> anyhow::Result<SyncPushResult> {
     let repo = Repository::current()?;
+
+    // Resolve stage mode: CLI flag beats config, config beats built-in default (All).
+    let stage_mode = match stage {
+        Some(m) => m,
+        None => {
+            let config = UserConfig::load().context("Failed to load config")?;
+            let project = repo.project_identifier().ok();
+            let resolved = config.resolved(project.as_deref());
+            resolved.sync.stage()
+        }
+    };
+
     let branch = match branch {
         Some(b) => b,
         None => repo.require_current_branch("sync push")?,
     };
     let remote = resolve_sync_remote(&repo, &branch)?;
 
-    // 1. Stage changes. -A stages all (incl. new files); -u only tracked files.
-    let add_flag = if tracked { "-u" } else { "-A" };
-    repo.run_command(&["add", add_flag])
-        .context("Failed to stage changes")?;
+    // 1. Stage changes according to the resolved stage mode.
+    match stage_mode {
+        StageMode::All => {
+            repo.run_command(&["add", "-A"])
+                .context("Failed to stage changes")?;
+        }
+        StageMode::Tracked => {
+            repo.run_command(&["add", "-u"])
+                .context("Failed to stage tracked changes")?;
+        }
+        StageMode::None => {
+            // Stage nothing; commit only what's already in the index.
+        }
+    }
 
     // 2. Commit only when something is actually staged.
     //    `diff --cached --quiet` exits 0 when the index is clean,

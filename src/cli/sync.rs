@@ -5,14 +5,31 @@ pub enum SyncCommand {
     /// Commit and push work to the remote (append-only)
     ///
     /// Stages changes, makes a `wip` commit, and pushes. Never force-pushes.
+    #[command(after_long_help = r#"## Staging
+
+Controls what to stage before the wip checkpoint commit:
+
+| Value | Behavior |
+|-------|----------|
+| `all` | Stage everything: untracked files + unstaged tracked changes (default) |
+| `tracked` | Stage tracked changes only (like `git add -u`) |
+| `none` | Stage nothing, commit only what's already in the index |
+
+Configure the default in user or project config:
+
+```toml
+[sync]
+stage = "tracked"
+```
+"#)]
     Push {
         /// Branch to sync (defaults to current worktree)
         #[arg(add = crate::completion::branch_value_completer(), value_parser = crate::cli::non_empty_branch)]
         branch: Option<String>,
 
-        /// Stage only tracked changes (exclude new files)
+        /// What to stage before the wip commit [default: all]
         #[arg(long)]
-        tracked: bool,
+        stage: Option<crate::commands::commit::StageMode>,
 
         /// Override the auto-generated wip commit message
         #[arg(short = 'm', long)]

@@ -51,7 +51,7 @@ pub use resolved::ResolvedConfig;
 pub use schema::valid_user_config_keys;
 pub use sections::{
     CommitConfig, CommitGenerationConfig, CopyIgnoredConfig, ListColumnConfig, ListConfig,
-    MergeConfig, RemoveConfig, StageMode, StepConfig, SwitchConfig, SwitchPickerConfig,
+    MergeConfig, RemoveConfig, StageMode, StepConfig, SwitchConfig, SwitchPickerConfig, SyncConfig,
     UserProjectOverrides,
 };
 
@@ -383,6 +383,10 @@ pub struct UserConfig {
     /// Configuration for `wt step` subcommands
     #[serde(default, skip_serializing_if = "super::is_default")]
     pub step: sections::StepConfig,
+
+    /// Configuration for the `wt sync` command
+    #[serde(default, skip_serializing_if = "super::is_default")]
+    pub sync: sections::SyncConfig,
 
     /// Command aliases for `wt <name>`
     #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
