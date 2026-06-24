@@ -1684,7 +1684,7 @@ fn sync_frontmatter_description(content: &str, description: &str) -> String {
 /// Each page preserves its frontmatter and replaces the AUTO-GENERATED marker region.
 /// Note: `select` is excluded because it's a deprecated hidden alias for `wt switch`.
 const COMMAND_PAGES: &[&str] = &[
-    "switch", "list", "merge", "remove", "config", "step", "hook",
+    "switch", "list", "merge", "remove", "config", "step", "hook", "sync",
 ];
 
 /// Write `expected` to `path` and record `rel_path` in `updated`. Creates

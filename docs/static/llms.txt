@@ -18,6 +18,7 @@ with many parallel changes, including hooks to automate local workflows.
 - [wt config](https://worktrunk.dev/config.md): Manage user & project configs. Includes shell integration, hooks, and saved state.
 - [wt step](https://worktrunk.dev/step.md): Run individual operations. The building blocks of wt merge — commit, squash, rebase, push — plus standalone utilities.
 - [wt hook](https://worktrunk.dev/hook.md): Run configured hooks.
+- [wt sync](https://worktrunk.dev/sync.md): Sync work across machines (append-only). Push commits + pushes to the remote; pull fast-forwards from it. No force-push, no reset --hard. Squash the wip stack later with wt merge.
 
 ## Reference
 
