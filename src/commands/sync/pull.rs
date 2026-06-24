@@ -1,5 +1,6 @@
+use anyhow::Context;
 use color_print::cformat;
-use worktrunk::git::{ErrorExt, Repository};
+use worktrunk::git::Repository;
 use worktrunk::styling::{eprintln, info_message, progress_message, success_message};
 
 use crate::commands::sync::{SyncPullOutcome, SyncPullResult, resolve_sync_remote};
@@ -20,12 +21,7 @@ pub fn sync_pull(branch: Option<String>) -> anyhow::Result<SyncPullResult> {
         ))
     );
     repo.run_command(&["fetch", &remote, &branch])
-        .map_err(|e| {
-            anyhow::anyhow!(
-                "Failed to fetch {branch} from {remote}: {}",
-                e.display_message()
-            )
-        })?;
+        .with_context(|| format!("Failed to fetch {branch} from {remote}"))?;
 
     let remote_ref = format!("{remote}/{branch}");
 
@@ -53,13 +49,13 @@ pub fn sync_pull(branch: Option<String>) -> anyhow::Result<SyncPullResult> {
     //    changes nothing) when the local branch has diverged or when uncommitted
     //    changes would be overwritten — surface git's message rather than
     //    clobbering anything.
+    // `.with_context` preserves the underlying `CommandError` so git's stderr
+    // (the diverged / would-be-overwritten message) renders in the gutter,
+    // instead of a bare multiline error the top-level handler rejects.
     repo.run_command(&["merge", "--ff-only", &remote_ref])
-        .map_err(|e| {
-            anyhow::anyhow!(
-                "Cannot fast-forward {branch} to {remote_ref} — the local branch \
-                 has diverged (you may have unpushed commits) or has conflicting \
-                 uncommitted changes. Run `wt sync push` or reconcile manually.\n{}",
-                e.display_message()
+        .with_context(|| {
+            format!(
+                "Cannot fast-forward {branch} to {remote_ref} — the local branch has diverged (you may have unpushed commits) or has conflicting uncommitted changes. Run `wt sync push` or reconcile manually."
             )
         })?;
 

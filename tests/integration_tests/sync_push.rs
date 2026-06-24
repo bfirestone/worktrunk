@@ -165,6 +165,12 @@ fn sync_push_rejects_non_fast_forward(mut repo_with_remote_and_feature: TestRepo
         stderr.contains("wt sync pull"),
         "error message should mention 'wt sync pull', got: {stderr}"
     );
+    // Regression guard: the rejection must surface as a clean error, not a
+    // panic (a flattened multiline error trips the top-level handler's assert).
+    assert!(
+        !stderr.contains("panicked"),
+        "rejection must not panic; got: {stderr}"
+    );
 
     // The remote tip must be unchanged (nothing was force-pushed).
     let remote_tip_after = remote_log(repo, "feature");

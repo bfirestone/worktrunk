@@ -1,6 +1,6 @@
 use anyhow::Context;
 use color_print::cformat;
-use worktrunk::git::{ErrorExt, Repository};
+use worktrunk::git::Repository;
 use worktrunk::styling::{eprintln, info_message, progress_message, success_message};
 
 use crate::commands::sync::{SyncPushOutcome, SyncPushResult, resolve_sync_remote, wip_message};
@@ -66,12 +66,13 @@ pub fn sync_push(
     } else {
         vec!["push", "-u", &remote, &branch]
     };
-    repo.run_command(&push_args).map_err(|e| {
-        // A non-fast-forward rejection means the remote has commits we don't have.
-        anyhow::anyhow!(
-            "Push to {remote}/{branch} was rejected — the remote has commits you \
-             don't have. Run `wt sync pull` first.\n{}",
-            e.display_message()
+    // A non-fast-forward rejection means the remote has commits we don't have.
+    // `.with_context` preserves the underlying `CommandError` (so git's stderr
+    // renders in the gutter) instead of flattening it into a bare multiline
+    // error, which the top-level handler rejects.
+    repo.run_command(&push_args).with_context(|| {
+        format!(
+            "Push to {remote}/{branch} was rejected — the remote has commits you don't have. Run `wt sync pull` first."
         )
     })?;
 

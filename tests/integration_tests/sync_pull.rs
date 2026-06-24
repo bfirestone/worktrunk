@@ -155,6 +155,13 @@ fn sync_pull_diverged_fails_safely(mut repo_with_remote_and_feature: TestRepo) {
         !output.status.success(),
         "wt sync pull should fail on diverged branches, but succeeded"
     );
+    // Regression guard: divergence must surface as a clean error, not a panic
+    // (a flattened multiline error trips the top-level handler's assert).
+    let stderr = String::from_utf8_lossy(&output.stderr);
+    assert!(
+        !stderr.contains("panicked"),
+        "diverged pull must not panic; got: {stderr}"
+    );
 
     // Local HEAD must be unchanged — no data loss.
     let post_sha = repo.head_sha_in(&wt);
